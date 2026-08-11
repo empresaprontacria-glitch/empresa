@@ -29,9 +29,6 @@ let WhatsappController = class WhatsappController {
     async sendMessage(dto) {
         return await this.whatsappService.sendMessage(dto.tenantId, dto.number, dto.text);
     }
-    async getTenants() {
-        return await this.whatsappService.getAllTenants();
-    }
 };
 exports.WhatsappController = WhatsappController;
 __decorate([
@@ -55,12 +52,6 @@ __decorate([
     __metadata("design:paramtypes", [whatsapp_dto_1.SendTextMessageDto]),
     __metadata("design:returntype", Promise)
 ], WhatsappController.prototype, "sendMessage", null);
-__decorate([
-    (0, common_1.Get)('tenants'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], WhatsappController.prototype, "getTenants", null);
 exports.WhatsappController = WhatsappController = __decorate([
     (0, common_1.Controller)('api/v1/whatsapp'),
     __metadata("design:paramtypes", [whatsapp_service_1.WhatsappService])
