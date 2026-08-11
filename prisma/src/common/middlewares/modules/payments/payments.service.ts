@@ -5,34 +5,57 @@ import { PrismaClient } from '@prisma/client';
 export class PaymentsService {
   private prisma = new PrismaClient();
 
+  // Criar cobrança de assinatura (solicitado no controller)
+  async createSubscriptionCharge(data: any) {
+    // Implementação da criação de cobrança ou retorno do payload
+    return { success: true, data };
+  }
+
+  // Webhook do Asaas (solicitado no controller)
+  async handleAsaasWebhook(body: any) {
+    if (body.event === 'PAYMENT_RECEIVED' || body.event === 'PAYMENT_CONFIRMED') {
+      const tenantId = body.payment?.externalReference;
+      if (tenantId) {
+        const nextYear = new Date();
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+
+        await this.prisma.subscription.updateMany({
+          where: { tenantId },
+          data: {
+            status: 'ACTIVE',
+            currentPeriodEnd: nextYear,
+          },
+        });
+      }
+    }
+    return { received: true };
+  }
+
+  // Método de auxílio direto
   async handlePaymentSuccess(tenantId: string, planId: string, durationMonths: number = 1) {
-    // 1. Calcula a nova data final do período de assinatura (ex: 30 dias a partir de hoje)
     const currentPeriodEnd = new Date();
     currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + durationMonths);
 
-    // 2. Busca assinatura existente
     const subscription = await this.prisma.subscription.findFirst({
       where: { tenantId },
     });
 
     if (subscription) {
-      // Atualiza assinatura existente
       return await this.prisma.subscription.update({
         where: { id: subscription.id },
         data: {
           status: 'ACTIVE',
-          currentPeriodEnd: currentPeriodEnd, // <- Campo obrigatório ajustado
+          currentPeriodEnd,
           plan: { connect: { id: planId } },
         },
       });
     } else {
-      // Cria nova assinatura se não existir
       return await this.prisma.subscription.create({
         data: {
           tenant: { connect: { id: tenantId } },
           plan: { connect: { id: planId } },
           status: 'ACTIVE',
-          currentPeriodEnd: currentPeriodEnd, // <- Campo obrigatório ajustado
+          currentPeriodEnd,
         },
       });
     }
