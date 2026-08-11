@@ -17,11 +17,12 @@ async function main() {
     return null;
   });
 
-  // 2. Criar Tenant (com o campo email obrigatório)
+  // 2. Criar Tenant (com os campos email e phone obrigatórios)
   const tenant = await prisma.tenant.create({
     data: {
       name: 'Empresa Pronta',
       email: 'contato@empresapronta.com',
+      phone: '98986275172',
       status: 'ACTIVE',
     },
   });
