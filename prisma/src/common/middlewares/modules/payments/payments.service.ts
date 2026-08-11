@@ -1,77 +1,40 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { AsaasWebhookDto, CreateSubscriptionPaymentDto } from './payments.dto';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PaymentsService {
+  private prisma = new PrismaClient();
 
-  // 1. GERAR COBRANÇA DE ASSINATURA (Exemplo de integração com API Asaas)
-  async createSubscriptionCharge(dto: CreateSubscriptionPaymentDto) {
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: dto.tenantId },
+  async handlePaymentSuccess(tenantId: string, planId: string, durationMonths: number = 1) {
+    // 1. Calcula a nova data final do período de assinatura (ex: 30 dias a partir de hoje)
+    const currentPeriodEnd = new Date();
+    currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + durationMonths);
+
+    // 2. Busca assinatura existente
+    const subscription = await this.prisma.subscription.findFirst({
+      where: { tenantId },
     });
 
-    const plan = await prisma.plan.findUnique({
-      where: { id: dto.planId },
-    });
-
-    if (!tenant || !plan) {
-      throw new NotFoundException('Salão ou Plano não encontrado.');
-    }
-
-    // Aqui seu backend faz a chamada para a API do Gateway de Pagamento (Asaas/Mercado Pago)
-    // Passando o tenant.id dentro de `externalReference` para sabermos de quem é o pagamento quando o Webhook responder.
-    
-    return {
-      message: 'Cobrança gerada com sucesso.',
-      pixQrCode: '00020126580014BR.GOV.BCB.PIX...', // Exemplo de PIX Copia e Cola retornado
-      value: plan.price,
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Vencimento em 30 dias
-    };
-  }
-
-  // 2. PROCESSAR O WEBHOOK RECEBIDO DO BANCO (AUTOMAÇÃO TOTAL)
-  async handleAsaasWebhook(payload: AsaasWebhookDto) {
-    const { event, payment } = payload;
-    const tenantId = payment.externalReference;
-
-    if (!tenantId) {
-      throw new BadRequestException('Webhook recebido sem identificador de tenant (externalReference).');
-    }
-
-    // EVENTO: Pagamento Confirmado / Recebido
-    if (event === 'PAYMENT_RECEIVED') {
-      const newDueDate = new Date();
-      newDueDate.setDate(newDueDate.getDate() + 30); // Adiciona +30 dias de acesso
-
-      // Atualiza o status no banco para ACTIVE e estende a validade
-      await this.prisma.subscription.update({
-  where: { id: subscriptionId },
-  data: {
-    status: 'ACTIVE',
-        },
-      });
-
-      console.log(`[PAGAMENTO CONFIRMADO] Tenant ${tenantId} ativado até ${newDueDate.toISOString()}`);
-      return { success: true, message: 'Assinatura reativada/renovada.' };
-    }
-
-    // EVENTO: Cobrança Vencida / Inadimplência
-    if (event === 'PAYMENT_OVERDUE') {
-      // Bloqueia o acesso imediatamente alterando para OVERDUE
-      await prisma.subscription.update({
-        where: { tenantId },
+    if (subscription) {
+      // Atualiza assinatura existente
+      return await this.prisma.subscription.update({
+        where: { id: subscription.id },
         data: {
-          status: SubscriptionStatus.OVERDUE,
+          status: 'ACTIVE',
+          currentPeriodEnd: currentPeriodEnd, // <- Campo obrigatório ajustado
+          plan: { connect: { id: planId } },
         },
       });
-
-      console.log(`[INADIMPLÊNCIA] Tenant ${tenantId} foi suspenso por falta de pagamento.`);
-      return { success: true, message: 'Assinatura suspensa.' };
+    } else {
+      // Cria nova assinatura se não existir
+      return await this.prisma.subscription.create({
+        data: {
+          tenant: { connect: { id: tenantId } },
+          plan: { connect: { id: planId } },
+          status: 'ACTIVE',
+          currentPeriodEnd: currentPeriodEnd, // <- Campo obrigatório ajustado
+        },
+      });
     }
-
-    return { success: true, message: 'Evento ignorado sem alterações.' };
   }
 }

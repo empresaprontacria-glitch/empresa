@@ -18,7 +18,7 @@ async function main() {
     return await prisma.plan.findFirst();
   });
 
-  // 2. Criar Tenant com o campo niche obrigatório
+  // 2. Criar Tenant
   const tenant = await prisma.tenant.create({
     data: {
       name: 'Empresa Pronta',
@@ -31,13 +31,17 @@ async function main() {
 
   console.log(`✅ Tenant criado: ${tenant.name} (ID: ${tenant.id})`);
 
-  // 3. Criar Assinatura vinculando Tenant e Plano
+  // 3. Criar Assinatura com currentPeriodEnd obrigatório
   if (plan) {
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+
     await prisma.subscription.create({
       data: {
         tenant: { connect: { id: tenant.id } },
         plan: { connect: { id: plan.id } },
         status: 'ACTIVE',
+        currentPeriodEnd: nextYear,
       },
     });
     console.log('✅ Assinatura vinculada com sucesso!');
