@@ -6,4 +6,5 @@ export declare class WhatsappController {
     createInstance(dto: CreateInstanceDto): Promise<any>;
     getQrCode(tenantId: string): Promise<any>;
     sendMessage(dto: SendTextMessageDto): Promise<any>;
+    getTenants(): Promise<any>;
 }

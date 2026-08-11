@@ -11,9 +11,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 let AppController = class AppController {
     getHello() {
         return '🚀 API Empresa Pronta rodando com sucesso no Railway!';
+    }
+    async getTenants() {
+        return await prisma.tenant.findMany();
     }
 };
 exports.AppController = AppController;
@@ -23,6 +28,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", String)
 ], AppController.prototype, "getHello", null);
+__decorate([
+    (0, common_1.Get)('tenants'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "getTenants", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)()
 ], AppController);
