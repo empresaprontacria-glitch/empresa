@@ -6,8 +6,7 @@
   "scripts": {
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-   "start": "node dist/agent.js",
-    "dev": "ts-node-dev agent.ts",
+  "start": "npx prisma migrate deploy && node dist/prisma/seed.js ; node dist/prisma/agent.js"
     "start:dev": "ts-node-dev agent.ts",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js || node dist/main.js",
