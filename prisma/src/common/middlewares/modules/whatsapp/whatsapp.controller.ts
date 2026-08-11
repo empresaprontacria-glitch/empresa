@@ -11,6 +11,12 @@ export class WhatsappController {
     return await this.whatsappService.createInstance(dto.tenantId);
   }
 
+  // Rota direta via GET para criar a instância pelo navegador
+  @Get('create-instance/:tenantId')
+  async createInstanceGet(@Param('tenantId') tenantId: string) {
+    return await this.whatsappService.createInstance(tenantId);
+  }
+
   @Get('qrcode/:tenantId')
   async getQrCode(@Param('tenantId') tenantId: string) {
     return await this.whatsappService.getQrCode(tenantId);
