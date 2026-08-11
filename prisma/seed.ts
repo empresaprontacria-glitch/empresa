@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando a criação dos dados iniciais...');
 
-  // 1. Buscar ou criar o Nicho utilizando 'slug' obrigatório
+  // 1. Buscar ou criar a entidade Niche (para os modelos que exigem objeto)
   let niche = await prisma.niche.findFirst({
     where: { slug: 'beauty' },
   });
@@ -19,7 +19,7 @@ async function main() {
     });
   }
 
-  // 2. Criar ou buscar o Plano Master
+  // 2. Criar ou buscar o Plano Master (usa objeto de relação)
   let plan = await prisma.plan.findFirst({
     where: { name: 'Plano Master' },
   });
@@ -37,7 +37,7 @@ async function main() {
     });
   }
 
-  // 3. Criar ou buscar o Tenant
+  // 3. Criar ou buscar o Tenant (niche como campo escalar/string direta)
   let tenant = await prisma.tenant.findFirst({
     where: { email: 'contato@empresapronta.com' },
   });
@@ -49,15 +49,13 @@ async function main() {
         email: 'contato@empresapronta.com',
         phone: '98986275172',
         status: 'ACTIVE',
-        niche: {
-          connect: { id: niche.id },
-        },
+        niche: 'BEAUTY',
       },
     });
     console.log(`✅ Tenant criado: ${tenant.name} (ID: ${tenant.id})`);
   }
 
-  // 4. Criar Assinatura vinculada
+  // 4. Criar Assinatura vinculando Tenant e Plan
   if (plan && tenant) {
     const nextYear = new Date();
     nextYear.setFullYear(nextYear.getFullYear() + 1);
