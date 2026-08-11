@@ -1,14 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './src/common/middlewares/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
   app.enableCors();
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`🚀 Aplicação SaaS rodando com sucesso na porta: ${port}`);
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Aplicação rodando na porta ${port}`);
 }
 
 bootstrap();

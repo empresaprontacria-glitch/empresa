@@ -5,40 +5,42 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando a criação dos dados iniciais...');
 
-  // 1. Criar Plano Padrão
+  // 1. Criar ou buscar o Plano Master
   const plan = await prisma.plan.create({
     data: {
       name: 'Plano Master',
       price: 99.90,
       hasAI: true,
+      niche: 'BEAUTY',
     },
-  }).catch(() => {
-    console.log('⚠️ Plano já existente ou estrutura modificada, pulando criação de plano.');
-    return null;
+  }).catch(async () => {
+    console.log('⚠️ Plano já existente, buscando existente...');
+    return await prisma.plan.findFirst();
   });
 
-  // 2. Criar Tenant (com os campos email e phone obrigatórios)
+  // 2. Criar Tenant com o campo niche obrigatório
   const tenant = await prisma.tenant.create({
     data: {
       name: 'Empresa Pronta',
       email: 'contato@empresapronta.com',
       phone: '98986275172',
       status: 'ACTIVE',
+      niche: 'BEAUTY',
     },
   });
 
   console.log(`✅ Tenant criado: ${tenant.name} (ID: ${tenant.id})`);
 
-  // 3. Criar Assinatura para o Tenant (se o plano foi criado)
+  // 3. Criar Assinatura vinculando Tenant e Plano
   if (plan) {
     await prisma.subscription.create({
       data: {
-        tenantId: tenant.id,
-        planId: plan.id,
+        tenant: { connect: { id: tenant.id } },
+        plan: { connect: { id: plan.id } },
         status: 'ACTIVE',
       },
     });
-    console.log('✅ Assinatura vinculada ao plano Master.');
+    console.log('✅ Assinatura vinculada com sucesso!');
   }
 
   console.log('🎉 Seed executado com sucesso!');
