@@ -1,0 +1,73 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
+async function main() {
+    console.log('🌱 Iniciando a criação dos dados iniciais...');
+    let niche = await prisma.niche.findFirst({
+        where: { slug: 'beauty' },
+    });
+    if (!niche) {
+        niche = await prisma.niche.create({
+            data: {
+                name: 'BEAUTY',
+                slug: 'beauty',
+            },
+        });
+    }
+    let plan = await prisma.plan.findFirst({
+        where: { name: 'Plano Master' },
+    });
+    if (!plan) {
+        plan = await prisma.plan.create({
+            data: {
+                name: 'Plano Master',
+                price: 99.90,
+                hasAI: true,
+                niche: { connect: { id: niche.id } },
+            },
+        });
+    }
+    let tenant = await prisma.tenant.findFirst({
+        where: { email: 'contato@empresapronta.com' },
+    });
+    if (!tenant) {
+        tenant = await prisma.tenant.create({
+            data: {
+                name: 'Empresa Pronta',
+                email: 'contato@empresapronta.com',
+                phone: '98986275172',
+                status: 'ACTIVE',
+                niche: { connect: { id: niche.id } },
+                plan: { connect: { id: plan.id } },
+            },
+        });
+        console.log(`✅ Tenant criado: ${tenant.name} (ID: ${tenant.id})`);
+    }
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const subscription = await prisma.subscription.findFirst({
+        where: { tenantId: tenant.id },
+    });
+    if (!subscription) {
+        await prisma.subscription.create({
+            data: {
+                tenant: { connect: { id: tenant.id } },
+                plan: { connect: { id: plan.id } },
+                status: 'ACTIVE',
+                currentPeriodEnd: nextYear,
+            },
+        });
+        console.log('✅ Assinatura vinculada com sucesso!');
+    }
+    console.log('🎉 Seed executado com sucesso!');
+}
+main()
+    .catch((e) => {
+    console.error('❌ Erro durante o seed:', e);
+    process.exit(1);
+})
+    .finally(async () => {
+    await prisma.$disconnect();
+});
+//# sourceMappingURL=seed.js.map

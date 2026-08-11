@@ -11,6 +11,12 @@ const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 let SalonService = class SalonService {
+    async getCustomers(tenantId) {
+        return await prisma.customer.findMany({
+            where: { tenantId },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
     async createProfessional(dto) {
         return await prisma.professional.create({
             data: {
@@ -20,61 +26,50 @@ let SalonService = class SalonService {
         });
     }
     async listProfessionals(tenantId) {
-        return await prisma.professional.findMany({ where: { tenantId } });
+        return await prisma.professional.findMany({
+            where: { tenantId },
+        });
     }
     async createService(dto) {
         return await prisma.service.create({
             data: {
                 tenantId: dto.tenantId,
                 name: dto.name,
-                price: dto.price,
-                durationMin: dto.durationMin,
+                price: typeof dto.price === 'string' ? parseFloat(dto.price) : dto.price,
+                duration: typeof dto.duration === 'string' ? parseInt(dto.duration, 10) : (dto.duration || 30),
             },
         });
     }
     async listServices(tenantId) {
-        return await prisma.service.findMany({ where: { tenantId } });
+        return await prisma.service.findMany({
+            where: { tenantId },
+        });
     }
     async createAppointment(dto) {
-        let client = await prisma.client.findFirst({
-            where: { tenantId: dto.tenantId, phone: dto.clientPhone },
-        });
-        if (!client) {
-            client = await prisma.client.create({
-                data: {
-                    tenantId: dto.tenantId,
-                    name: dto.clientName,
-                    phone: dto.clientPhone,
-                },
-            });
-        }
-        const appointment = await prisma.appointment.create({
+        return await prisma.appointment.create({
             data: {
                 tenantId: dto.tenantId,
-                clientId: client.id,
-                professionalId: dto.professionalId,
+                customerId: dto.customerId || dto.clientId,
                 serviceId: dto.serviceId,
-                dateTime: new Date(dto.dateTime),
-                status: 'CONFIRMED',
-            },
-            include: {
-                service: true,
-                professional: true,
-                client: true,
+                professionalId: dto.professionalId,
+                date: new Date(dto.date || dto.dateTime),
+                status: dto.status || 'CONFIRMED',
             },
         });
-        return appointment;
     }
-    async listAppointments(tenantId) {
+    async getAppointments(tenantId) {
         return await prisma.appointment.findMany({
             where: { tenantId },
             include: {
-                client: true,
-                professional: true,
+                customer: true,
                 service: true,
+                professional: true,
             },
-            orderBy: { dateTime: 'asc' },
+            orderBy: { date: 'asc' },
         });
+    }
+    async listAppointments(tenantId) {
+        return await this.getAppointments(tenantId);
     }
 };
 exports.SalonService = SalonService;

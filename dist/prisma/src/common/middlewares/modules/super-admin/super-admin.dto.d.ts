@@ -1,16 +1,17 @@
-import { SubscriptionStatus } from '@prisma/client';
 export declare class CreatePlanDto {
     name: string;
     price: number;
     hasAI: boolean;
-    maxInstances?: number;
+    nicheId: string;
 }
 export declare class CreateTenantDto {
     name: string;
+    email: string;
+    phone: string;
     document?: string;
+    nicheId: string;
     planId: string;
-    hasAI: boolean;
 }
 export declare class UpdateSubscriptionStatusDto {
-    status: SubscriptionStatus;
+    status: string;
 }

@@ -9,55 +9,56 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentsService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
 let PaymentsService = class PaymentsService {
-    async createSubscriptionCharge(dto) {
-        const tenant = await prisma.tenant.findUnique({
-            where: { id: dto.tenantId },
-        });
-        const plan = await prisma.plan.findUnique({
-            where: { id: dto.planId },
-        });
-        if (!tenant || !plan) {
-            throw new common_1.NotFoundException('Salão ou Plano não encontrado.');
-        }
-        return {
-            message: 'Cobrança gerada com sucesso.',
-            pixQrCode: '00020126580014BR.GOV.BCB.PIX...',
-            value: plan.price,
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        };
+    constructor() {
+        this.prisma = new client_1.PrismaClient();
     }
-    async handleAsaasWebhook(payload) {
-        const { event, payment } = payload;
-        const tenantId = payment.externalReference;
-        if (!tenantId) {
-            throw new common_1.BadRequestException('Webhook recebido sem identificador de tenant (externalReference).');
+    async createSubscriptionCharge(data) {
+        return { success: true, data };
+    }
+    async handleAsaasWebhook(body) {
+        if (body.event === 'PAYMENT_RECEIVED' || body.event === 'PAYMENT_CONFIRMED') {
+            const tenantId = body.payment?.externalReference;
+            if (tenantId) {
+                const nextYear = new Date();
+                nextYear.setFullYear(nextYear.getFullYear() + 1);
+                await this.prisma.subscription.updateMany({
+                    where: { tenantId },
+                    data: {
+                        status: 'ACTIVE',
+                        currentPeriodEnd: nextYear,
+                    },
+                });
+            }
         }
-        if (event === 'PAYMENT_RECEIVED') {
-            const newDueDate = new Date();
-            newDueDate.setDate(newDueDate.getDate() + 30);
-            await prisma.subscription.update({
-                where: { tenantId },
+        return { received: true };
+    }
+    async handlePaymentSuccess(tenantId, planId, durationMonths = 1) {
+        const currentPeriodEnd = new Date();
+        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + durationMonths);
+        const subscription = await this.prisma.subscription.findFirst({
+            where: { tenantId },
+        });
+        if (subscription) {
+            return await this.prisma.subscription.update({
+                where: { id: subscription.id },
                 data: {
-                    status: client_1.SubscriptionStatus.ACTIVE,
-                    dueDate: newDueDate,
+                    status: 'ACTIVE',
+                    currentPeriodEnd,
+                    plan: { connect: { id: planId } },
                 },
             });
-            console.log(`[PAGAMENTO CONFIRMADO] Tenant ${tenantId} ativado até ${newDueDate.toISOString()}`);
-            return { success: true, message: 'Assinatura reativada/renovada.' };
         }
-        if (event === 'PAYMENT_OVERDUE') {
-            await prisma.subscription.update({
-                where: { tenantId },
+        else {
+            return await this.prisma.subscription.create({
                 data: {
-                    status: client_1.SubscriptionStatus.OVERDUE,
+                    tenant: { connect: { id: tenantId } },
+                    plan: { connect: { id: planId } },
+                    status: 'ACTIVE',
+                    currentPeriodEnd,
                 },
             });
-            console.log(`[INADIMPLÊNCIA] Tenant ${tenantId} foi suspenso por falta de pagamento.`);
-            return { success: true, message: 'Assinatura suspensa.' };
         }
-        return { success: true, message: 'Evento ignorado sem alterações.' };
     }
 };
 exports.PaymentsService = PaymentsService;

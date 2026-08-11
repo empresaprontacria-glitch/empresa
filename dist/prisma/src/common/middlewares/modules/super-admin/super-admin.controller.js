@@ -15,73 +15,55 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SuperAdminController = void 0;
 const common_1 = require("@nestjs/common");
 const super_admin_service_1 = require("./super-admin.service");
-const super_admin_dto_1 = require("./super-admin.dto");
 let SuperAdminController = class SuperAdminController {
-    constructor(masterService) {
-        this.masterService = masterService;
+    constructor(superAdminService) {
+        this.superAdminService = superAdminService;
     }
-    async getDashboardMetrics() {
-        return await this.masterService.getMetrics();
+    async getAllTenants() {
+        return this.superAdminService.getAllTenants();
     }
-    async createPlan(dto) {
-        return await this.masterService.createPlan(dto);
+    async getTenantById(id) {
+        return this.superAdminService.getTenantById(id);
     }
-    async listPlans() {
-        return await this.masterService.listPlans();
+    async updateTenantStatus(id, status) {
+        return this.superAdminService.updateTenantStatus(id, status);
     }
-    async createTenant(dto) {
-        return await this.masterService.createTenantWithSubscription(dto);
-    }
-    async listTenants() {
-        return await this.masterService.listTenants();
-    }
-    async updateSubscriptionStatus(tenantId, dto) {
-        return await this.masterService.updateSubscriptionStatus(tenantId, dto.status);
+    async updateSubscription(id, body) {
+        return this.superAdminService.updateSubscription(id, body);
     }
 };
 exports.SuperAdminController = SuperAdminController;
-__decorate([
-    (0, common_1.Get)('dashboard'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], SuperAdminController.prototype, "getDashboardMetrics", null);
-__decorate([
-    (0, common_1.Post)('plans'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [super_admin_dto_1.CreatePlanDto]),
-    __metadata("design:returntype", Promise)
-], SuperAdminController.prototype, "createPlan", null);
-__decorate([
-    (0, common_1.Get)('plans'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], SuperAdminController.prototype, "listPlans", null);
-__decorate([
-    (0, common_1.Post)('tenants'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [super_admin_dto_1.CreateTenantDto]),
-    __metadata("design:returntype", Promise)
-], SuperAdminController.prototype, "createTenant", null);
 __decorate([
     (0, common_1.Get)('tenants'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], SuperAdminController.prototype, "listTenants", null);
+], SuperAdminController.prototype, "getAllTenants", null);
 __decorate([
-    (0, common_1.Put)('tenants/:tenantId/subscription-status'),
-    __param(0, (0, common_1.Param)('tenantId')),
+    (0, common_1.Get)('tenants/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], SuperAdminController.prototype, "getTenantById", null);
+__decorate([
+    (0, common_1.Patch)('tenants/:id/status'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('status')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], SuperAdminController.prototype, "updateTenantStatus", null);
+__decorate([
+    (0, common_1.Patch)('subscriptions/:id'),
+    __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, super_admin_dto_1.UpdateSubscriptionStatusDto]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], SuperAdminController.prototype, "updateSubscriptionStatus", null);
+], SuperAdminController.prototype, "updateSubscription", null);
 exports.SuperAdminController = SuperAdminController = __decorate([
-    (0, common_1.Controller)('api/v1/master'),
+    (0, common_1.Controller)('super-admin'),
     __metadata("design:paramtypes", [super_admin_service_1.SuperAdminService])
 ], SuperAdminController);
 //# sourceMappingURL=super-admin.controller.js.map

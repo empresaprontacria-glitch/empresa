@@ -18,69 +18,55 @@ export declare class SalonController {
         tenantId: string;
         name: string;
         price: number;
-        durationMin: number;
+        duration: number;
     }>;
     listServices(tenantId: string): Promise<{
         id: string;
         tenantId: string;
         name: string;
         price: number;
-        durationMin: number;
+        duration: number;
     }[]>;
     createAppointment(dto: CreateAppointmentDto): Promise<{
-        service: {
-            id: string;
-            tenantId: string;
-            name: string;
-            price: number;
-            durationMin: number;
-        };
-        professional: {
-            id: string;
-            tenantId: string;
-            name: string;
-        };
-        client: {
-            id: string;
-            tenantId: string;
-            name: string;
-            phone: string;
-        };
-    } & {
         id: string;
         tenantId: string;
+        createdAt: Date;
         status: string;
         serviceId: string;
         professionalId: string;
-        dateTime: Date;
-        clientId: string;
+        date: Date;
+        customerId: string;
     }>;
     listAppointments(tenantId: string): Promise<({
+        customer: {
+            id: string;
+            tenantId: string;
+            name: string;
+            phone: string;
+            email: string | null;
+            notes: string | null;
+            createdAt: Date;
+        };
         service: {
             id: string;
             tenantId: string;
             name: string;
             price: number;
-            durationMin: number;
+            duration: number;
         };
         professional: {
             id: string;
             tenantId: string;
             name: string;
         };
-        client: {
-            id: string;
-            tenantId: string;
-            name: string;
-            phone: string;
-        };
     } & {
         id: string;
         tenantId: string;
+        createdAt: Date;
         status: string;
         serviceId: string;
         professionalId: string;
-        dateTime: Date;
-        clientId: string;
+        date: Date;
+        customerId: string;
     })[]>;
 }

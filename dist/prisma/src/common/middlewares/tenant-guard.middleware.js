@@ -14,26 +14,23 @@ let TenantGuardMiddleware = class TenantGuardMiddleware {
     async use(req, res, next) {
         const tenantId = req.headers['x-tenant-id'];
         if (!tenantId) {
-            throw new common_1.ForbiddenException('Tenant ID não fornecido no cabeçalho (x-tenant-id).');
+            throw new common_1.UnauthorizedException('Tenant ID (x-tenant-id) é obrigatório no cabeçalho.');
         }
-        const subscription = await prisma.subscription.findUnique({
-            where: { tenantId },
-            include: { plan: true },
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            include: {
+                subscriptions: {
+                    include: { plan: true },
+                },
+            },
         });
-        if (!subscription) {
-            throw new common_1.ForbiddenException('Tenant não possui uma assinatura vinculada.');
+        if (!tenant) {
+            throw new common_1.UnauthorizedException('Tenant não encontrado ou inválido.');
         }
-        if (subscription.status === 'OVERDUE') {
-            throw new common_1.ForbiddenException('Acesso suspenso por pendência financeira. Realize o pagamento para reativar.');
+        if (tenant.status !== 'ACTIVE') {
+            throw new common_1.ForbiddenException('Sua conta ou assinatura está inativa ou suspensa.');
         }
-        if (subscription.status === 'CANCELED') {
-            throw new common_1.ForbiddenException('Esta conta foi cancelada. Entre em contato com o suporte.');
-        }
-        req['tenant'] = {
-            id: tenantId,
-            hasAI: subscription.plan.hasAI,
-            maxInstances: subscription.plan.maxInstances,
-        };
+        req.tenant = tenant;
         next();
     }
 };

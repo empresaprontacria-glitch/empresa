@@ -1,13 +1,19 @@
-import { AsaasWebhookDto, CreateSubscriptionPaymentDto } from './payments.dto';
 export declare class PaymentsService {
-    createSubscriptionCharge(dto: CreateSubscriptionPaymentDto): Promise<{
-        message: string;
-        pixQrCode: string;
-        value: number;
-        dueDate: Date;
-    }>;
-    handleAsaasWebhook(payload: AsaasWebhookDto): Promise<{
+    private prisma;
+    createSubscriptionCharge(data: any): Promise<{
         success: boolean;
-        message: string;
+        data: any;
+    }>;
+    handleAsaasWebhook(body: any): Promise<{
+        received: boolean;
+    }>;
+    handlePaymentSuccess(tenantId: string, planId: string, durationMonths?: number): Promise<{
+        id: string;
+        tenantId: string;
+        createdAt: Date;
+        status: string;
+        planId: string;
+        paymentMethod: string;
+        currentPeriodEnd: Date;
     }>;
 }

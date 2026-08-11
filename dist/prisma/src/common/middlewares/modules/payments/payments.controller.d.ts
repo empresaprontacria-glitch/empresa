@@ -4,13 +4,10 @@ export declare class PaymentsController {
     private readonly paymentsService;
     constructor(paymentsService: PaymentsService);
     checkout(dto: CreateSubscriptionPaymentDto): Promise<{
-        message: string;
-        pixQrCode: string;
-        value: number;
-        dueDate: Date;
+        success: boolean;
+        data: any;
     }>;
     asaasWebhook(payload: AsaasWebhookDto): Promise<{
-        success: boolean;
-        message: string;
+        received: boolean;
     }>;
 }

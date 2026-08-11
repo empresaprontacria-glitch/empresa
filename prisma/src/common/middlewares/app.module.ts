@@ -7,6 +7,7 @@ import { SuperAdminController } from './modules/super-admin/super-admin.controll
 import { SuperAdminService } from './modules/super-admin/super-admin.service';
 import { WhatsappController } from './modules/whatsapp/whatsapp.controller';
 import { WhatsappService } from './modules/whatsapp/whatsapp.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [],
@@ -15,6 +16,7 @@ import { WhatsappService } from './modules/whatsapp/whatsapp.service';
     SalonController,
     SuperAdminController,
     WhatsappController,
+    AppController,
   ],
   providers: [
     AiService,

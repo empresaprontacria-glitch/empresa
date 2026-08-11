@@ -1,20 +1,20 @@
-import { TrainAiDto, ProcessMessageDto } from './ai.dto';
+import { ProcessMessageDto, TrainAiDto } from './ai.dto';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 export declare class AiService {
     private readonly whatsappService;
     constructor(whatsappService: WhatsappService);
     trainKnowledgeBase(dto: TrainAiDto): Promise<{
-        success: boolean;
-        message: string;
+        id: string;
+        tenantId: string;
+        systemPrompt: string;
+        businessContext: string;
+        isAiActive: boolean;
     }>;
-    private searchKnowledgeBase;
     processIncomingMessage(dto: ProcessMessageDto): Promise<{
-        status: string;
-        success?: undefined;
-        reply?: undefined;
+        message: string;
+        response?: undefined;
     } | {
-        success: boolean;
-        reply: string;
-        status?: undefined;
+        response: import("@langchain/core/messages").MessageContent;
+        message?: undefined;
     }>;
 }

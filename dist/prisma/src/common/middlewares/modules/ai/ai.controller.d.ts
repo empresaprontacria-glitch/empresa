@@ -4,16 +4,17 @@ export declare class AiController {
     private readonly aiService;
     constructor(aiService: AiService);
     trainKnowledgeBase(dto: TrainAiDto): Promise<{
-        success: boolean;
-        message: string;
+        id: string;
+        tenantId: string;
+        systemPrompt: string;
+        businessContext: string;
+        isAiActive: boolean;
     }>;
     processIncomingMessage(dto: ProcessMessageDto): Promise<{
-        status: string;
-        success?: undefined;
-        reply?: undefined;
+        message: string;
+        response?: undefined;
     } | {
-        success: boolean;
-        reply: string;
-        status?: undefined;
+        response: import("@langchain/core/messages").MessageContent;
+        message?: undefined;
     }>;
 }

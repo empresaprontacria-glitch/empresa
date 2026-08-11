@@ -1,68 +1,85 @@
-import { SubscriptionStatus } from '@prisma/client';
-import { CreatePlanDto, CreateTenantDto } from './super-admin.dto';
 export declare class SuperAdminService {
-    getMetrics(): Promise<{
-        totalTenants: number;
-        activeTenants: number;
-        overdueTenants: number;
-        mrr: number;
-    }>;
-    createPlan(dto: CreatePlanDto): Promise<{
-        id: string;
-        name: string;
-        price: number;
-        hasAI: boolean;
-        maxInstances: number;
-    }>;
-    listPlans(): Promise<{
-        id: string;
-        name: string;
-        price: number;
-        hasAI: boolean;
-        maxInstances: number;
-    }[]>;
-    createTenantWithSubscription(dto: CreateTenantDto): Promise<{
-        tenant: {
-            id: string;
-            name: string;
-            document: string | null;
-            createdAt: Date;
-        };
-        subscription: {
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
-            id: string;
-            tenantId: string;
-            planId: string;
-            dueDate: Date;
-        };
-    }>;
-    listTenants(): Promise<({
-        subscription: {
+    getAllTenants(): Promise<({
+        subscriptions: ({
             plan: {
                 id: string;
                 name: string;
+                createdAt: Date;
                 price: number;
                 hasAI: boolean;
-                maxInstances: number;
+                nicheId: string;
             };
         } & {
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
             id: string;
             tenantId: string;
+            createdAt: Date;
+            status: string;
             planId: string;
-            dueDate: Date;
-        };
+            paymentMethod: string;
+            currentPeriodEnd: Date;
+        })[];
     } & {
         id: string;
         name: string;
-        document: string | null;
+        phone: string;
+        email: string;
         createdAt: Date;
+        status: string;
+        nicheId: string;
+        document: string | null;
+        planId: string;
+        updatedAt: Date;
     })[]>;
-    updateSubscriptionStatus(tenantId: string, status: SubscriptionStatus): Promise<{
-        status: import(".prisma/client").$Enums.SubscriptionStatus;
+    getTenantById(id: string): Promise<{
+        subscriptions: ({
+            plan: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                price: number;
+                hasAI: boolean;
+                nicheId: string;
+            };
+        } & {
+            id: string;
+            tenantId: string;
+            createdAt: Date;
+            status: string;
+            planId: string;
+            paymentMethod: string;
+            currentPeriodEnd: Date;
+        })[];
+    } & {
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        createdAt: Date;
+        status: string;
+        nicheId: string;
+        document: string | null;
+        planId: string;
+        updatedAt: Date;
+    }>;
+    updateTenantStatus(id: string, status: any): Promise<{
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        createdAt: Date;
+        status: string;
+        nicheId: string;
+        document: string | null;
+        planId: string;
+        updatedAt: Date;
+    }>;
+    updateSubscription(subscriptionId: string, data: any): Promise<{
         id: string;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         planId: string;
-        dueDate: Date;
+        paymentMethod: string;
+        currentPeriodEnd: Date;
     }>;
 }

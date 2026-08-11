@@ -1,6 +1,14 @@
-import { CreateAppointmentDto, CreateProfessionalDto, CreateServiceDto } from './salon.dto';
 export declare class SalonService {
-    createProfessional(dto: CreateProfessionalDto): Promise<{
+    getCustomers(tenantId: string): Promise<{
+        id: string;
+        tenantId: string;
+        name: string;
+        phone: string;
+        email: string | null;
+        notes: string | null;
+        createdAt: Date;
+    }[]>;
+    createProfessional(dto: any): Promise<{
         id: string;
         tenantId: string;
         name: string;
@@ -10,74 +18,92 @@ export declare class SalonService {
         tenantId: string;
         name: string;
     }[]>;
-    createService(dto: CreateServiceDto): Promise<{
+    createService(dto: any): Promise<{
         id: string;
         tenantId: string;
         name: string;
         price: number;
-        durationMin: number;
+        duration: number;
     }>;
     listServices(tenantId: string): Promise<{
         id: string;
         tenantId: string;
         name: string;
         price: number;
-        durationMin: number;
+        duration: number;
     }[]>;
-    createAppointment(dto: CreateAppointmentDto): Promise<{
-        service: {
-            id: string;
-            tenantId: string;
-            name: string;
-            price: number;
-            durationMin: number;
-        };
-        professional: {
-            id: string;
-            tenantId: string;
-            name: string;
-        };
-        client: {
-            id: string;
-            tenantId: string;
-            name: string;
-            phone: string;
-        };
-    } & {
+    createAppointment(dto: any): Promise<{
         id: string;
         tenantId: string;
+        createdAt: Date;
         status: string;
         serviceId: string;
         professionalId: string;
-        dateTime: Date;
-        clientId: string;
+        date: Date;
+        customerId: string;
     }>;
-    listAppointments(tenantId: string): Promise<({
+    getAppointments(tenantId: string): Promise<({
+        customer: {
+            id: string;
+            tenantId: string;
+            name: string;
+            phone: string;
+            email: string | null;
+            notes: string | null;
+            createdAt: Date;
+        };
         service: {
             id: string;
             tenantId: string;
             name: string;
             price: number;
-            durationMin: number;
+            duration: number;
         };
         professional: {
             id: string;
             tenantId: string;
             name: string;
         };
-        client: {
+    } & {
+        id: string;
+        tenantId: string;
+        createdAt: Date;
+        status: string;
+        serviceId: string;
+        professionalId: string;
+        date: Date;
+        customerId: string;
+    })[]>;
+    listAppointments(tenantId: string): Promise<({
+        customer: {
             id: string;
             tenantId: string;
             name: string;
             phone: string;
+            email: string | null;
+            notes: string | null;
+            createdAt: Date;
+        };
+        service: {
+            id: string;
+            tenantId: string;
+            name: string;
+            price: number;
+            duration: number;
+        };
+        professional: {
+            id: string;
+            tenantId: string;
+            name: string;
         };
     } & {
         id: string;
         tenantId: string;
+        createdAt: Date;
         status: string;
         serviceId: string;
         professionalId: string;
-        dateTime: Date;
-        clientId: string;
+        date: Date;
+        customerId: string;
     })[]>;
 }
