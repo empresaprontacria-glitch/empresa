@@ -20,4 +20,8 @@ export class WhatsappController {
   async sendMessage(@Body() dto: SendTextMessageDto) {
     return await this.whatsappService.sendMessage(dto.tenantId, dto.number, dto.text);
   }
+  @Get('tenants')
+async getTenants() {
+  return await this.whatsappService.getAllTenants(); // ou consulta direta no Prisma
+}
 }
