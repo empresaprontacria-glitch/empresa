@@ -5,15 +5,19 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando a criação dos dados iniciais...');
 
-  // 1. Garante que o Nicho "BEAUTY" exista no banco
-  const niche = await prisma.niche.upsert({
-    where: { name: 'BEAUTY' },
-    update: {},
-    create: { name: 'BEAUTY' },
-  }).catch(() => null);
+  // 1. Buscar ou criar o Nicho utilizando 'slug' obrigatório
+  let niche = await prisma.niche.findFirst({
+    where: { slug: 'beauty' },
+  });
 
-  // Monta a relação do niche se ele existir
-  const nicheRelation = niche ? { connect: { id: niche.id } } : undefined;
+  if (!niche) {
+    niche = await prisma.niche.create({
+      data: {
+        name: 'BEAUTY',
+        slug: 'beauty',
+      },
+    });
+  }
 
   // 2. Criar ou buscar o Plano Master
   let plan = await prisma.plan.findFirst({
@@ -26,12 +30,14 @@ async function main() {
         name: 'Plano Master',
         price: 99.90,
         hasAI: true,
-        ...(nicheRelation ? { niche: nicheRelation } : {}),
+        niche: {
+          connect: { id: niche.id },
+        },
       },
     });
   }
 
-  // 3. Criar ou buscar Tenant
+  // 3. Criar ou buscar o Tenant
   let tenant = await prisma.tenant.findFirst({
     where: { email: 'contato@empresapronta.com' },
   });
@@ -43,13 +49,15 @@ async function main() {
         email: 'contato@empresapronta.com',
         phone: '98986275172',
         status: 'ACTIVE',
-        ...(nicheRelation ? { niche: nicheRelation } : {}),
+        niche: {
+          connect: { id: niche.id },
+        },
       },
     });
     console.log(`✅ Tenant criado: ${tenant.name} (ID: ${tenant.id})`);
   }
 
-  // 4. Criar Assinatura com a data final de período
+  // 4. Criar Assinatura vinculada
   if (plan && tenant) {
     const nextYear = new Date();
     nextYear.setFullYear(nextYear.getFullYear() + 1);
