@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { PrismaClient, SubscriptionStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { AsaasWebhookDto, CreateSubscriptionPaymentDto } from './payments.dto';
 
 const prisma = new PrismaClient();
@@ -47,11 +47,10 @@ export class PaymentsService {
       newDueDate.setDate(newDueDate.getDate() + 30); // Adiciona +30 dias de acesso
 
       // Atualiza o status no banco para ACTIVE e estende a validade
-      await prisma.subscription.update({
-        where: { tenantId },
-        data: {
-          status: SubscriptionStatus.ACTIVE,
-          dueDate: newDueDate,
+      await this.prisma.subscription.update({
+  where: { id: subscriptionId },
+  data: {
+    status: 'ACTIVE',
         },
       });
 
