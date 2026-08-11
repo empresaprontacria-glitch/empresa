@@ -17,7 +17,4 @@
     "noEmitOnError": false
   },
   "exclude": ["node_modules", "dist"]
-"prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  
-  }
+}
