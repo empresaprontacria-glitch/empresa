@@ -1,0 +1,146 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Niche {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  plans       Plan[]
+  tenants     Tenant[]
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  hasAI       Boolean  @default(false)
+  nicheId     String
+  niche       Niche    @relation(fields: [nicheId], references: [id])
+  createdAt   DateTime @default(now())
+
+  subscriptions Subscription[]
+  tenants       Tenant[]
+}
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  phone       String
+  document    String?
+  status      String   @default("PENDING")
+  
+  nicheId     String
+  niche       Niche    @relation(fields: [nicheId], references: [id])
+  
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subscriptions     Subscription[]
+  whatsappInstances WhatsAppInstance[]
+  automatedFlows    AutomatedFlow[]
+  aiSettings        AiSetting[]
+  customers         Customer[]
+  services          Service[]
+  professionals     Professional[]
+  appointments      Appointment[]
+}
+
+model Subscription {
+  id               String   @id @default(uuid())
+  tenantId         String   @unique
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  planId           String
+  plan             Plan     @relation(fields: [planId], references: [id])
+  status           String   @default("ACTIVE")
+  paymentMethod    String   @default("PIX")
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+}
+
+model WhatsAppInstance {
+  id           String   @id @default(uuid())
+  tenantId     String   @unique
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  instanceName String   @unique
+  qrCode       String?
+  status       String   @default("DISCONNECTED")
+  isConnected  Boolean  @default(false)
+  updatedAt    DateTime @updatedAt
+}
+
+model AutomatedFlow {
+  id             String   @id @default(uuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  triggerKeyword String
+  responseText   String
+  order          Int      @default(0)
+}
+
+model AiSetting {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  systemPrompt    String
+  businessContext String
+  isAiActive      Boolean  @default(true)
+}
+
+model Customer {
+  id           String        @id @default(uuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  name         String
+  phone        String
+  email        String?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Service {
+  id           String        @id @default(uuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  name         String
+  price        Float
+  duration     Int           // em minutos
+  appointments Appointment[]
+}
+
+model Professional {
+  id           String        @id @default(uuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  name         String
+  appointments Appointment[]
+}
+
+model Appointment {
+  id             String       @id @default(uuid())
+  tenantId       String
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  customerId     String
+  customer       Customer     @relation(fields: [customerId], references: [id])
+  serviceId      String
+  service        Service      @relation(fields: [serviceId], references: [id])
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  date           DateTime
+  status         String       @default("CONFIRMED")
+  createdAt      DateTime     @default(now())
+}
