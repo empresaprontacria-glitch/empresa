@@ -30,14 +30,12 @@ async function main() {
         name: 'Plano Master',
         price: 99.90,
         hasAI: true,
-        niche: {
-          connect: { id: niche.id },
-        },
-      } as any,
+        niche: { connect: { id: niche.id } },
+      },
     });
   }
 
-  // 3. Criar ou buscar o Tenant
+  // 3. Criar ou buscar o Tenant conectando o Niche e o Plan obrigatórios
   let tenant = await prisma.tenant.findFirst({
     where: { email: 'contato@empresapronta.com' },
   });
@@ -49,34 +47,31 @@ async function main() {
         email: 'contato@empresapronta.com',
         phone: '98986275172',
         status: 'ACTIVE',
-        niche: {
-          connect: { id: niche.id },
-        },
-      } as any,
+        niche: { connect: { id: niche.id } },
+        plan: { connect: { id: plan.id } },
+      },
     });
     console.log(`✅ Tenant criado: ${tenant.name} (ID: ${tenant.id})`);
   }
 
   // 4. Criar Assinatura vinculada
-  if (plan && tenant) {
-    const nextYear = new Date();
-    nextYear.setFullYear(nextYear.getFullYear() + 1);
+  const nextYear = new Date();
+  nextYear.setFullYear(nextYear.getFullYear() + 1);
 
-    const subscription = await prisma.subscription.findFirst({
-      where: { tenantId: tenant.id },
+  const subscription = await prisma.subscription.findFirst({
+    where: { tenantId: tenant.id },
+  });
+
+  if (!subscription) {
+    await prisma.subscription.create({
+      data: {
+        tenant: { connect: { id: tenant.id } },
+        plan: { connect: { id: plan.id } },
+        status: 'ACTIVE',
+        currentPeriodEnd: nextYear,
+      },
     });
-
-    if (!subscription) {
-      await prisma.subscription.create({
-        data: {
-          tenant: { connect: { id: tenant.id } },
-          plan: { connect: { id: plan.id } },
-          status: 'ACTIVE',
-          currentPeriodEnd: nextYear,
-        },
-      } as any);
-      console.log('✅ Assinatura vinculada com sucesso!');
-    }
+    console.log('✅ Assinatura vinculada com sucesso!');
   }
 
   console.log('🎉 Seed executado com sucesso!');
